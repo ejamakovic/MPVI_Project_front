@@ -1,0 +1,13 @@
+.language-selector {
+    margin-bottom: 20px;
+  }
+  
+  .language-selector label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  .language-selector .select-container {
+    width: 300px;
+  }
+  

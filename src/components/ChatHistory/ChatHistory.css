@@ -1,0 +1,27 @@
+.chat-history {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+  
+  .message {
+    margin-bottom: 10px;
+  }
+  
+  .message strong {
+    color: #333;
+  }
+  
+  .message-user {
+    text-align: right;
+    color: #007bff;
+  }
+  
+  .message-bot {
+    text-align: left;
+    color: #28a745;
+  }
+  
