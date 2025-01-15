@@ -1,27 +1,57 @@
 .chat-history {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-  }
-  
-  .message {
-    margin-bottom: 10px;
-  }
-  
-  .message strong {
-    color: #333;
-  }
-  
-  .message-user {
-    text-align: right;
-    color: #007bff;
-  }
-  
-  .message-bot {
-    text-align: left;
-    color: #28a745;
-  }
-  
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.message-icon {
+  margin-right: 10px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.message strong {
+  color: #333;
+}
+
+.message-user {
+  text-align: right;
+  color: #007bff;
+  justify-content: flex-end;
+}
+
+.message-bot {
+  text-align: left;
+  color: #28a745;
+}
+
+.message-user .message-text {
+  background-color: #e6f7ff;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.message-bot .message-text {
+  background-color: #d4edda;
+  padding: 10px;
+  border-radius: 5px;
+}

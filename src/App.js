@@ -47,20 +47,23 @@ const App = () => {
 
   const handleSend = async (message) => {
     const newMessages = [...messages, { sender: 'You', text: message }];
-    setMessages(newMessages);
-
+    setMessages(newMessages);  // Update the UI with the new message
+  
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/generateText`, {
-        user_message: message,
+        src_lang: "bos",  // Use the input language from state
+        message: message,  // Send only the new message, not the entire conversation
       });
-
-      const reply = response.data.translated_text;
-      setMessages([...newMessages, { sender: 'LLM', text: reply }]);
+  
+      const reply = response.data.generated_text;
+      setMessages([...newMessages, { sender: 'Chef', text: reply }]);  // Update UI with the chef's reply
     } catch (error) {
       console.error('Error calling backend:', error);
-      setMessages([ ...newMessages, { sender: 'LLM', text: 'An error occurred. Please try again.' } ]);
+      setMessages([...newMessages, { sender: 'Chef', text: 'An error occurred. Please try again.' }]);
     }
   };
+  
+  
 
   const handleAudioUpload = async (audioFile) => {
     const formData = new FormData();
