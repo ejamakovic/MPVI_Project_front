@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import LanguageSelector from './components/LanguageSelector/LanguageSelector';
 import ChatInput from './components/ChatInput/ChatInput';
@@ -12,6 +12,9 @@ const App = () => {
   const [outputLanguage, setOutputLanguage] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [transcribedText, setTranscribedText] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const languageOptions = [
     { value: 'eng', label: 'English' },
@@ -26,9 +29,9 @@ const App = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: "Zdravo kako si?",  // Text to convert to audio
-          src_lang: "bos",           // Source language (Bosnian)
-          tgt_lang: "eng"            // Target language (English)
+          text: "Zdravo kako si?",  
+          src_lang: "bos",          
+          tgt_lang: "eng"           
         }),
       });
 
@@ -51,7 +54,7 @@ const App = () => {
   
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/generateText`, {
-        src_lang: "bos",  // Use the input language from state
+        src_lang: "eng",  // Use the input language from state
         message: message,  // Send only the new message, not the entire conversation
       });
   
@@ -83,6 +86,52 @@ const App = () => {
     }
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const formData = new FormData();
+        formData.append('audio', audioBlob);
+        formData.append('src_lang', inputLanguage?.value);
+        formData.append('target_lang', outputLanguage?.value);
+
+        try {
+          const response = await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/audio2text`,
+            formData,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
+          );
+          const transcribedText = response.data.transcribed_text;
+          setTranscribedText(transcribedText);
+        } catch (error) {
+          console.error('Error sending recorded audio:', error);
+        }
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   return (
     <div>
       <h1>LLM Chat</h1>
@@ -99,9 +148,8 @@ const App = () => {
       <ChatHistory messages={messages} />
       <ChatInput onSend={handleSend} />
       <AudioUpload onResult={handleAudioUpload} />
-
-      {/* Audio Player to play audio in the browser */}
-      {audioUrl && (
+{/* Audio Player to play audio in the browser */}
+{audioUrl && (
         <div>
           <h3>Audio Player</h3>
           <audio controls>
@@ -115,6 +163,24 @@ const App = () => {
       <button onClick={playAudioInBrowser}>
         Play Generated Audio
       </button>
+
+      {/* Voice Recording Buttons */}
+      <div>
+        <button onClick={startRecording} disabled={isRecording}>
+          Start Recording
+        </button>
+        <button onClick={stopRecording} disabled={!isRecording}>
+          Stop Recording
+        </button>
+      </div>
+
+      {/* Display Transcribed Text */}
+      {transcribedText && (
+        <div>
+          <h3>Transcribed Text</h3>
+          <p>{transcribedText}</p>
+        </div>
+      )}
     </div>
   );
 };
